@@ -253,41 +253,52 @@ class Rooms:
                             print("A ghost is now possessing your body. Your soul has moved onto the Underworld.")
                             self.hitpoints = 0
                         break
-                    case 2: # "Eat the mysterious food."
-                        choices: ["poison", "hint"]
-                        meal = random.choice(choices)
-                        if meal == "poison":
-                            if self.hitpoints <= 50:
-                                print("You've become the new ghost of this mansion.")
-                            else:
-                                self.hitpoints == self.hitpoints - 50
-                                print("You've been poisoned. You've lost HP. Your HP is now at {hitpoints},").format(hitpoints = self.hitpoints)
+                    case 2: # "Examine the old wine bottles."
+                        print("A secret door is opened.")
+                        secret_door = input("Would you like to go through it? y or n")
+                        if secret_door == "y":
+                            entry_choice = random.choice(rooms)
+                            match entry_choice:
+                                case "Entrance Hall":
+                                    entrance_hall()
+                                case "Library":
+                                    library()
+                                case "Dining Room":
+                                    dining()
+                                case "Cellar":
+                                    cellar()
+                                case "Master Bedroom":
+                                    master()
+                                case "Attic":
+                                    attic()
+                                case "Secret Tunnel":
+                                    tunnel()
                         else:
-                            print("A note reads 'Go through the south door'.")
-                        break
-                    case 3: # "Look under the tablecloth."
-                        print("You find a key.")
-                        self.inventory.append("key")                 
-                        break
-                    case 4: # "Inspect the portraits on the wall."
-                        print("One is missing an eye.")
-                        break
-                    case 5: # "Enter the North door."
-                        entry_choice = random.choice(rooms)
-                        match entry_choice:
-                            case "Entrance Hall":
-                                entrance_hall()
-                            case "Library":
-                                library()
-                            case "Dining Room":
-                                dining()
-                            case "Cellar":
-                                cellar()
-                            case "Master Bedroom":
-                                master()
-                            case "Attic":
-                                attic()
-                            case "Secret Tunnel":
-                                tunnel()
+                            break
+                    case 3: # "Light a match."
+                        print("A hidden passage is shown.")
+                        hidden_passage = input("Would you like to follow it? y or no")
+                        if hidden_passage == "y":
+                            secret_door = input("Would you like to go through it? y or n")
+                            match secret_door:
+                                case "y":
+                                    entry_choice = random.choice(rooms)
+                                    match entry_choice:
+                                        case "Entrance Hall":
+                                            entrance_hall()
+                                        case "Library":
+                                            library()
+                                        case "Dining Room":
+                                            dining()
+                                        case "Cellar":
+                                            cellar()
+                                        case "Master Bedroom":
+                                            master()
+                                        case "Attic":
+                                            attic()
+                                        case "Secret Tunnel":
+                                            tunnel()
+                        else:
+                            break
                     case _:
                         print("Invalid choice. Please enter a number between 1 and 3.")
