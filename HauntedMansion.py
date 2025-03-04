@@ -89,7 +89,7 @@ class Rooms:
                     self.player.inventory.append("candle")
                     break
                 case "4": # "Climb up the stairs."
-                    self.dining()
+                    self.current_room = "Dining Room"
                     break # Exit this room after moving to the next one.
                 case _:
                     print("Invalid choice. Please enter a number between 1 and 4.")
@@ -113,7 +113,8 @@ class Rooms:
                     print("A secret door is exposed.")
                     door = input("Do you want to walk through the door? y or n")
                     if door.lower() == "y":
-                        self.room_methods[random.choice(self.rooms)]()
+                        self.current_room = random.choice(self.rooms)
+                        break
                     else:
                         print("You walk away from the door.")
                     break
@@ -125,7 +126,8 @@ class Rooms:
                     print("A note reads 'I thought you would save me.'.")
                     break
                 case "5": # "Enter the East door."
-                    self.master_bedroom()
+                    self.current_room = "Master Bedroom"
+                    break
                 case _:
                     print("Invalid choice. Please enter a number between 1 and 3.")
 
@@ -196,7 +198,8 @@ class Rooms:
                                 print("The ghost is now possessing your body. Your soul has moved onto the Underworld.")
                                 self.player.is_possessed = True
                         else:
-                            self.room_methods[random.choice(self.rooms)]()
+                            self.current_room = random.choice(self.rooms)
+                            break
                     else:
                         print("A ghost is now possessing your body. Your soul has moved onto the Underworld.")
                         self.player.is_possessed = True
@@ -205,7 +208,8 @@ class Rooms:
                     print("A secret door is opened.")
                     secret_door = input("Would you like to go through it? y or n")
                     if secret_door.lower() == "y":
-                        self.room_methods[random.choice(self.rooms)]()
+                        self.current_room = random.choice(self.rooms)
+                        break
                     break
                 case "3": # "Light a match."
                     print("A hidden passage is shown.")
@@ -214,7 +218,8 @@ class Rooms:
                         secret_door = input("Would you like to go through it? y or n")
                         match secret_door.lower():
                             case "y":
-                                self.room_methods[random.choice(self.rooms)]()
+                                self.current_room = random.choice(self.rooms)
+                                break
                     break
                 case _:
                     print("Invalid choice. Please enter a number between 1 and 3.")
@@ -264,7 +269,7 @@ class Rooms:
                     print("Your reflection is....different.")
                     break
                 case "4": # "Try the door behind you"
-                    self.room_methods[random.choice(self.rooms)]()
+                    self.current_room = random.choice(self.rooms)
                     break
                 case _:
                     print("Invalid choice. Please enter a number between 1 and 4.")
@@ -293,7 +298,7 @@ class Rooms:
                         print("You put the doll up to your ear and it says 'Find the tunnel'")
                     break
                 case "4": # "Try the door behind you"
-                    self.room_methods[random.choice(self.rooms)]()
+                    self.current_room = random.choice(self.rooms)
                     break
                 case _:
                     print("Invalid choice. Please enter a number between 1 and 3.")
@@ -316,12 +321,13 @@ class Rooms:
                     break
                 case "2": # "Touch the mossy wall."
                     print("You find an old lever that seems rusted and unusable.")
-                    mossy_wall = input("Do you want to try to pull the lever? y or n")
+                    mossy_wall = input("Do you want to try to pull the lever? y or n ")
                     if mossy_wall.lower() == "y" and self.player.strength >= 10:
                         print("The wall opens and another passage is revealed")
-                        passage = input("Do you want to take the passage? y or n")
+                        passage = input("Do you want to take the passage? y or n ")
                         if passage.lower() == "y":
                             print("You've escaped the mansion!")
+                            self.player.has_escaped = True
                         elif "Crowbar" in self.player.inventory:
                             print("Using the crowbar, you force the lever down. The passage opens!")
                             print("You've escaped the mansion!")
@@ -412,7 +418,7 @@ def start_game():
             if player.is_ghost or player.has_escaped or player.is_possessed:
                 break
         
-        else:
+        elif room.current_room == "Secret Tunnel":
             room.secret_tunnel()
             
             if player.is_ghost or player.has_escaped or player.is_possessed:
