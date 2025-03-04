@@ -10,12 +10,14 @@ class Player:
         self.perc = 0
         self.inventory = []
         self.turn = 0
+        self.has_escaped = False
+        self.is_ghost = False
         
     def __repr__(self):
         return "{name} has {hitpoints} HP, {intel} INT, {strength} STR, and {perc} PER.".format(name = self.name, hitpoints = self.hitpoints, intel = self.intel, strength = self.strength, perc = self.perc)
     
     # Used to determine how the player would like to start.
-    def play_approach(self, play_type):
+    def play_approach(self):
         while True:
             play_type = input("Enter a choice between 1-3. 1 is balanced play. 2 is RPG-style, and 3 is survival.")
             
@@ -76,7 +78,7 @@ class Rooms:
                     break
                 case "3": # "Take the candle from the table."
                     print("This might be useful later.")
-                    self.inventory.append("candle")
+                    self.player.inventory.append("candle")
                     break
                 case "4": # "Climb up the stairs."
                     self.room_methods[random.choice(self.rooms)]()
@@ -86,7 +88,8 @@ class Rooms:
     # Triggered when "library" is selected.
     def library(self):
         # Information on the room and options. 
-        print("You enter a room with rows and rows of book shelves. There's a door behind you, a door to the east, a strange book in the bookcase across from you, a ladder leaning against one of the stacks, and a lit candle sitting on the table in the middle of the library.")
+        print("You enter a room with rows and rows of book shelves.")
+        print("There's a door behind you, a door to the east, a strange book in the bookcase across from you, a ladder leaning against one of the stacks, and a lit candle sitting on the table in the middle of the library.")
         
         self.player.turn += 1
         input("Do you want to 1. Try to open the door behind you., 2. Read the strange book., 3. Blow out the candle on the table., 4. Move the ladder., or 5. Enter the East door. Enter a choice between 1 and 5.")
@@ -108,7 +111,7 @@ class Rooms:
                     break
                 case "3": # "Move the ladder."
                     print("A ghost appears and wants to speak with you.")
-                    print(ghost("library"))                    
+                    self.ghost("library")                
                     break
                 case "4": # "Move the ladder."
                     print("A note reads 'I thought you would save me.'.")
@@ -134,20 +137,22 @@ class Rooms:
                     print("The door is locked.")
                     break
                 case "2": # "Eat the mysterious food."
-                    choices: ["poison", "hint"]
+                    choices = ["poison", "hint"]
                     meal = random.choice(choices)
                     if meal == "poison":
-                        if self.hitpoints <= 50:
+                        if self.player.hitpoints <= 50:
                             print("You've become the new ghost of this mansion.")
+                            self.player.is_ghost == True
+                            end_game(self.player)
                         else:
-                            self.hitpoints -= 50
-                            print("You've been poisoned. You've lost HP. Your HP is now at {hitpoints},").format(hitpoints = self.hitpoints)
+                            self.player.hitpoints -= 50
+                            print("You've been poisoned. You've lost HP. Your HP is now at {hitpoints},".format(hitpoints = self.player.hitpoints))
                     else:
                         print("A note reads 'Go through the south door'.")
                     break
                 case "3": # "Look under the tablecloth."
-                    print("You find a key.")
-                    self.player.inventory.append("key")                 
+                    print("You find a dusty engagement ring.")
+                    self.player.inventory.append("ring")                 
                     break
                 case "4": # "Inspect the portraits on the wall."
                     print("One is missing an eye.")
@@ -180,12 +185,14 @@ class Rooms:
                                     self.player.strength += 1
                                 else:
                                     print("The ghost is now possessing your body. Your soul has moved onto the Underworld.")
-                                    self.player.hitpoints = 0
+                                    self.player.is_possessed = True
+                                    end_game(self.player)
                             else:
                                 self.room_methods[random.choice(self.rooms)]()
                         else:
                             print("A ghost is now possessing your body. Your soul has moved onto the Underworld.")
-                            self.player.hitpoints = 0
+                            self.player.is_possessed = True
+                            end_game(self.player)
                         break
                     case "2": # "Examine the old wine bottles."
                         print("A secret door is opened.")
@@ -219,17 +226,18 @@ class Rooms:
             match option:
                 case "1": # "Open the wardrobe."
                     print("A ghost appears and wants to speak with you.")
-                    print(ghost("master"))    
+                    self.ghost("master")  
                     break
                 case "2": # "Look under the bed."
                     if self.player.hitpoints <= 50:
-                            print("You've become the new ghost of this mansion after being attacked by a ghoul.")
+                        print("You've become the new ghost of this mansion after being attacked by a ghoul.")
+                        end_game(self.player)
                     else:
                         self.player.hitpoints -= 50
-                        print("You've been attacked! You've lost HP. Your HP is now at {hitpoints},").format(hitpoints = self.hitpoints)
+                        print("You've been attacked! You've lost HP. Your HP is now at {hitpoints},".format(hitpoints = self.player.hitpoints))
                         ghoul_fight = input("Will you run or fight the ghoul? y or n")
                         if ghoul_fight.lower() == "y":
-                            if self.strength >= 8:
+                            if self.player.strength >= 8:
                                 print("You won the fight! The ghoul left behind a key.")
                                 self.player.inventory.append("Ghoul Key")
                             elif self.player.strength >= 4:
@@ -241,13 +249,15 @@ class Rooms:
                                     self.player.inventory.append("Ghoul Key")
                                 else:
                                     print("You've lost! You've become the newest ghost of this mansion.")
-                                    self.player.hitpoints = 0
+                                    self.player.is_ghost = True
+                                    end_game(self.player)
                             else:
                                 print("You've lost! You've become the newest ghost of this mansion.")
-                                self.player.hitpoints = 0
+                                self.player.is_ghost = True
+                                end_game(self.player)
                     break
                 case "3": # "Stare into the mirror."
-                    print("Your reflect is....different.")
+                    print("Your reflection is....different.")
                     break
                 case "4": # "Try the door behind you"
                     self.room_methods[random.choice(self.rooms)]()
@@ -297,6 +307,8 @@ class Rooms:
             match option:
                 case "1": # "Follow the rats."
                     print("You've escaped the mansion!")
+                    self.player.has_escaped = True
+                    end_game(self.player)
                     break
                 case "2": # "Touch the mossy wall."
                     print("You find an old lever that seems rusted and unusable.")
@@ -306,9 +318,16 @@ class Rooms:
                         passage = input("Do you want to take the passage? y or n")
                         if passage.lower() == "y":
                             print("You've escaped the mansion!")
+                        elif "Crowbar" in self.player.inventory:
+                            print("Using the crowbar, you force the lever down. The passage opens!")
+                            print("You've escaped the mansion!")
+                            self.player.has_escaped = True
                         else:
-                            print("You fall into a pit. HP has been reduced.")
-                            self.player.hitpoints -= 10
+                            if self.player.hitpoints <= 0:
+                                end_game(self.player)
+                            else:
+                                print("You fall into a pit. HP has been reduced.")
+                                self.player.hitpoints -= 10
                     break
                 case "3": # "Light your candle."
                     if "candle" in self.player.inventory:
@@ -320,3 +339,57 @@ class Rooms:
                 case _:
                     print("Invalid choice. Please enter a number between 1 and 3.")
                     break
+
+    def ghost(self, room):
+        if room == "library":
+            print("A translucent figure in tattered robes, clutches an old book. His hollow eyes scan the shelves endlessly.")
+            print("He was once a scholar who sought forbidden knowledge within the mansion’s ancient texts but became trapped in its curse.")
+            print("Only those with wisdom may pass. Solve my riddle, and I shall aid you.")
+            if self.player.intel >= 5:
+                print("The mansion breathes, but its heart lies buried. Find the passage where the walls listen, and the rats lead the way.")
+            else:
+                print("Your intelligence is no match for the ghost. Some intelligence has been taken.")
+                self.player.intel -= 1
+        else:
+            print("A shadowy female figure in a torn wedding dress, sobs into her hands.")
+            print("She was once the mansion’s owner, betrayed and murdered on her wedding night. She lingers, searching for her lost engagement ring.")
+            quest = input("I cannot leave without my ring... Will you find it for me? y or n")
+            if quest.lower() == "y":
+                if "ring" in self.player.inventory:
+                    self.player.hitpoints += 5
+                    self.player.intel += 5
+                    self.player.strength += 5
+                    self.player.perc += 5
+                    print("Thank you so much for finding it!")
+                    print("All stats +5. Current stats are HP {hitpoints}, INT {intel}, STR {strength}, PERC {perc}".format(hitpoints = self.player.hitpoints, intel = self.player.intel, strength = self.player.strength, perc = self.player.perc))
+                else:
+                    print("She whispers... 'Try the attic...'")
+                    self.attic()
+            else:
+                if self.player.hitpoints <= 0:
+                    end_game(self.player)
+                else:
+                    print("The ghost screams. HP has been lost.")
+                    self.player.hitpoints -= 20                
+
+def start_game():
+    ch_name = input("What is your character's name?")
+    player = Player(ch_name)
+    player.play_approach()
+    
+    room = Rooms("Entrance Hall", player)
+    room.entrance_hall()
+
+def end_game(player):
+    if player.hitpoints == 0:
+        print("You have died. Game over. You've lost")
+    if player.has_escaped == True:
+        print("You have escaped. Congratulations! You've won!")
+    if player.is_ghost == True:
+        print("You've been trapped forever as a ghost in the mansion. Game over. You've lost")
+    if player.is_possessed == True:
+        print("You've been possessed by a ghost. Game over. You've lost.")
+        
+    play_again = input("Would you like to play again? y or n")
+    if play_again.lower() == "y":
+        start_game()
